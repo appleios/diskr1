@@ -379,12 +379,17 @@ public:
         
         for (auto it = eachValueCountInSequence.begin(); it != eachValueCountInSequence.end(); it++) {
             if (*it != -1) {
-                result += std::to_string(idx) + " => " + std::to_string(*it) + ", ";                
+                result += std::to_string(idx) + " => " + std::to_string(*it) + ", ";
             }
             idx++;
         }
         
-        Int sum = reduce<Int>(eachValueCountInSequence, 0 , [](Int prev, Int next) { return prev+next; });
+        Int sum = reduce<Int>(eachValueCountInSequence, 0 , [](Int prev, Int next) {
+            if(next>-1)
+                return prev+next;
+            else
+                return prev;
+        });
         result += "sum: " + std::to_string(sum) + "\n";
 
         return result;
