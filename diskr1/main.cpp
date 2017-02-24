@@ -97,16 +97,8 @@ Bool x1(BoolVector alpha) {
     return alpha[0];
 }
 
-Bool x12(BoolVector a) {
-    return sumLinear(a, 2);
-}
-
 Bool x123(BoolVector a) {
     return sumLinear(a, 3);
-}
-
-Bool x1234(BoolVector a) {
-    return sumLinear(a, 4);
 }
 
 
@@ -120,16 +112,15 @@ BoolVector calculateFunction(std::function<Bool (BoolVector)> f) {
     return result;
 }
 
-struct TableRow {
-private:
+class TableRow {
     string _functionName;
     std::function<Bool (BoolVector)> _f;
     BoolVector _values;
     
 public:
     
-    string functionName() {return _functionName;}
-    BoolVector values() {
+    virtual string functionName() {return _functionName;}
+    virtual BoolVector values() {
         if(_values.empty()) {
             _values = calculateFunction(_f);
         }
@@ -155,6 +146,19 @@ public:
         }
         return result+"]";
     }
+    
+    string rawDescription() {
+        string result("");
+        auto begin = values().begin();
+        auto end = values().end();
+        for (auto it = begin; it!=end; it++) {
+            Bool isLast = (it+1) == end;
+            string a = (*it == 0) ? "0" : "1";
+            string b = a + (isLast ? "" : " ");
+            result += b;
+        }
+        return result;
+    }
 };
 
 struct Table {
@@ -171,14 +175,67 @@ struct Table {
         }
         return result+"]";
     }
+    string rawDescription() {
+        string result("");
+        auto begin = rows.begin();
+        auto end = rows.end();
+        for (auto it = begin; it!=end; it++) {
+            Bool isLast = (it+1) == end;
+            string a = it->rawDescription();
+            string b = a + (isLast ? "" : "\n");
+            result += b;
+        }
+        return result;
+    }
+    Bool isEmpty() {
+        return rows.empty();
+    }
+    void addRow(TableRow r) {
+        rows.push_back(r);
+    }
 };
 
+class LinearFunctionsTable {
+    Table _table;
+public:
+    virtual Table table() {
+        if(_table.isEmpty()) {
+            _table.addRow(TableRow("0", [](BoolVector a){ return 0; }));
+            _table.addRow(TableRow("x1", [](BoolVector a){ return a[0]; }));
+            _table.addRow(TableRow("x1+x2", [](BoolVector a){ return a[0]+a[1]; }));
+            _table.addRow(TableRow("x1+x2+x3", [](BoolVector a){ return sumLinear(a,3); }));
+            _table.addRow(TableRow("x1+x2+x3+x4", [](BoolVector a){ return sumLinear(a,4); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5", [](BoolVector a){ return sumLinear(a,5); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6", [](BoolVector a){ return sumLinear(a,6); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7", [](BoolVector a){ return sumLinear(a,7); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8", [](BoolVector a){ return sumLinear(a,8); }));
+            _table.addRow(TableRow("1", [](BoolVector a){ return 1; }));
+            _table.addRow(TableRow("x1+1", [](BoolVector a){ return a[0]; }));
+            _table.addRow(TableRow("x1+x2+1", [](BoolVector a){ return neg(a[0]+a[1]); }));
+            _table.addRow(TableRow("x1+x2+x3+1", [](BoolVector a){ return neg(sumLinear(a,3)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+1", [](BoolVector a){ return neg(sumLinear(a,4)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+1", [](BoolVector a){ return neg(sumLinear(a,5)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+1", [](BoolVector a){ return neg(sumLinear(a,6)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+1", [](BoolVector a){ return neg(sumLinear(a,7)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8+1", [](BoolVector a){ return neg(sumLinear(a,8)); }));
+        }
+        return _table;
+    }
+    string description() {
+        return table().description();
+    }
+    string rawDescription() {
+        return table().rawDescription();
+    }
+};
+
+void runTests();
 
 int main(int argc, const char * argv[])
 {
-    testAlphaFromIndex();
-    TableRow r("x1+x2", [](BoolVector a){ return a[0]+a[1]; });
-    cout << r.description();
+//    runTests();
+    LinearFunctionsTable linearFunctionsTable;
+    cout << linearFunctionsTable.rawDescription();
     int a;
     cin >> a;
     return 0;
@@ -187,6 +244,25 @@ int main(int argc, const char * argv[])
 #pragma mark - Tests -
 
 #pragma mark - Alpha from Index
+
+void runTests() {
+    testAlphaFromIndex();
+    TableRow r("x1+x2", [](BoolVector a){ return a[0]+a[1]; });
+    cout << r.description();
+}
+
+void testAlphaFromIndexWithInputIndexAndExpectedOutput(Int inputIndex, Bool expectedOutput[SpaceDimension]);
+
+void testAlphaFromIndex() {
+    Bool v0[SpaceDimension] = {0,0,0,0,0,0,0,0};
+    Bool v1[SpaceDimension] = {1,0,0,0,0,0,0,0};
+    Bool vff[SpaceDimension] = {1,1,1,1,1,1,1,1};
+    Bool vfa[SpaceDimension] = {0,1,0,1,1,1,1,1};
+    testAlphaFromIndexWithInputIndexAndExpectedOutput(0, v0);
+    testAlphaFromIndexWithInputIndexAndExpectedOutput(1, v1);
+    testAlphaFromIndexWithInputIndexAndExpectedOutput(0xff, vff);
+    testAlphaFromIndexWithInputIndexAndExpectedOutput(0xfa, vfa);
+}
 
 void testAlphaFromIndexWithInputIndexAndExpectedOutput(Int inputIndex, Bool expectedOutput[SpaceDimension]) {
     BoolVector output(expectedOutput);
@@ -199,15 +275,4 @@ void testAlphaFromIndexWithInputIndexAndExpectedOutput(Int inputIndex, Bool expe
         std::cout << "FAILED (got: " << result.description() << ")";
     }
     std::cout << std::endl;
-}
-
-void testAlphaFromIndex() {
-    Bool v0[SpaceDimension] = {0,0,0,0,0,0,0,0};
-    Bool v1[SpaceDimension] = {1,0,0,0,0,0,0,0};
-    Bool vff[SpaceDimension] = {1,1,1,1,1,1,1,1};
-    Bool vfa[SpaceDimension] = {0,1,0,1,1,1,1,1};
-    testAlphaFromIndexWithInputIndexAndExpectedOutput(0, v0);
-    testAlphaFromIndexWithInputIndexAndExpectedOutput(1, v1);
-    testAlphaFromIndexWithInputIndexAndExpectedOutput(0xff, vff);
-    testAlphaFromIndexWithInputIndexAndExpectedOutput(0xfa, vfa);
 }
