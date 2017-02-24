@@ -334,7 +334,7 @@ public:
         if(_table.isEmpty()) {
             _table.addRow(TableRow("0", [](BoolVector a){ return 0; }));
             _table.addRow(TableRow("x1", [](BoolVector a){ return a[0]; }));
-            _table.addRow(TableRow("x1+x2", [](BoolVector a){ return a[0]+a[1]; }));
+            _table.addRow(TableRow("x1+x2", [](BoolVector a){ return sumLinear(a,2); }));
             _table.addRow(TableRow("x1+x2+x3", [](BoolVector a){ return sumLinear(a,3); }));
             _table.addRow(TableRow("x1+x2+x3+x4", [](BoolVector a){ return sumLinear(a,4); }));
             _table.addRow(TableRow("x1+x2+x3+x4+x5", [](BoolVector a){ return sumLinear(a,5); }));
@@ -347,7 +347,7 @@ public:
 //            _table.addRow(TableRow("x1+x2+x3+x4+x5+1", [](BoolVector a){ return neg(sumLinear(a,5)); }));
 //            _table.addRow(TableRow("x1+x2+x3+x4+1", [](BoolVector a){ return neg(sumLinear(a,4)); }));
 //            _table.addRow(TableRow("x1+x2+x3+1", [](BoolVector a){ return neg(sumLinear(a,3)); }));
-//            _table.addRow(TableRow("x1+x2+1", [](BoolVector a){ return neg(a[0]+a[1]); }));
+//            _table.addRow(TableRow("x1+x2+1", [](BoolVector a){ return neg(sumLinear(a,2)); }));
 //            _table.addRow(TableRow("x1+1", [](BoolVector a){ return neg(a[0]); }));
 //            _table.addRow(TableRow("1", [](BoolVector a){ return 1; }));
         }
