@@ -50,10 +50,10 @@ const Int Pow2SpaceDimension = 256;
 
 void testAlphaFromIndex();
 
-template<class U>
-vector<U> map(vector<U> v, std::function<U (U)> transform)
+template<class I, class O>
+vector<I, O> fmap(vector<I> v, std::function<O (I)> transform)
 {
-    vector<U> result;
+    vector<O> result;
     for (auto it = v.begin(); it != v.end(); it++) {
         result.push_back(transform(*it));
     }
@@ -133,8 +133,12 @@ BoolVector alphaFromIndex(Int index) {
     return result;
 }
 
-Int indexFromAlpha(BoolVector alpha) {
-    return 0;
+Int indexFromAlpha(BoolVector a) {
+    Int result = 0;
+    for (auto it = a.begin(); it != a.end(); it++) {
+        result = (result << 1) + *it;
+    }
+    return result;
 }
 
 Bool sumLinear(BoolVector alpha, Int components) {
@@ -157,97 +161,101 @@ Bool x123(BoolVector a) {
     return sumLinear(a, 3);
 }
 
+string stringFromIndex(Int idx, Int expectedWidth = 4) {
+    string t = NumberToString(idx);
+    if (t.length() < expectedWidth) {
+        Int d = expectedWidth - t.size();
+        switch (d) {
+            case 4:
+                t += "     ";
+                break;
+            case 3:
+                t += "    ";
+                break;
+            case 2:
+                t += "   ";
+                break;
+            case 1:
+                t += "  ";
+                break;
+            case 0  :
+                t += " ";
+                break;
+                
+            default:
+                break;
+        }
+    }
+    return t;
+}
+
 
 class FunctionValuesComputer
 {
 public:
     virtual BoolVector calculateFunction(std::function<Bool (BoolVector)> f) = 0;
+    virtual ~FunctionValuesComputer() {}
 };
 
-class FullTableFunctionValuesComputer : FunctionValuesComputer
+class FullTableFunctionValuesComputer : public FunctionValuesComputer
 {
+public:
+    BoolVector calculateFunction(std::function<Bool (BoolVector)> f)
+    {
+        BoolVector result;
+        for (Int i=0; i<Pow2SpaceDimension; i++) {
+            auto a = alphaFromIndex(i);
+            Bool b = f(a);
+            result.push_back(b);
+        }
+        return result;
+    }
+};
 
-}
-
-class TableRow {
-    string _functionName;
-    std::function<Bool (BoolVector)> _f;
-    FunctionValuesComputer *_computer;
-    
-    BoolVector _values;
+class PartTableFunctionValuesComputer : public FunctionValuesComputer
+{
+    vector<BoolVector> _space;
     
 public:
     
-    virtual string functionName() {return _functionName;}
+    virtual void setSpace(vector<BoolVector> &space) { _space = space; }
+    virtual vector<BoolVector> space() { return _space; }
     
-    virtual BoolVector values() {
-        if(_values.empty()) {
-            _values = computer()->calculateFunction(_f);
-        }
-        return _values;
-    }
-    
-    virtual FunctionValuesComputer *computer() {return _computer;}
-    
-    TableRow(string functionName, std::function<Bool (BoolVector)> f, FunctionValuesComputer *computer) :
-    _functionName(functionName), _f(f), _computer(computer)
+    BoolVector calculateFunction(std::function<Bool (BoolVector)> f)
     {
-    }
-    
-    string description() {
-        string result("");
-        result = functionName() + ": [";
-        auto begin = values().begin();
-        auto end = values().end();
-        for (auto it = begin; it!=end; it++) {
-            Bool isLast = (it+1) == end;
-            string a = (*it == 0) ? "0" : "1";
-            string b = a + (isLast ? "" : ", ");
-            result += b;
-        }
-        return result+"]";
-    }
-    
-    string rawDescription() {
-        string result("");
-        auto begin = values().begin();
-        auto end = values().end();
-        for (auto it = begin; it!=end; it++) {
-            Bool isLast = (it+1) == end;
-            string a = (*it == 0) ? "0" : "1";
-            string b = a + (isLast ? "" : " ");
-            result += b;
+        BoolVector result;
+        vector<BoolVector> line = space();
+        for (auto it = line.begin(); it != line.end(); it++) {
+            Bool b = f(*it);
+            result.push_back(b);
         }
         return result;
     }
 };
 
-struct Table {
+class TableRow
+{
+    string _functionName;
+    std::function<Bool (BoolVector)> _f;
+    
+public:
+    
+    virtual string functionName() { return _functionName; }
+    
+    virtual BoolVector computeValuesWithComputer(FunctionValuesComputer &computer) {
+        return computer.calculateFunction(_f);
+    }
+    
+    TableRow(string functionName, std::function<Bool (BoolVector)> f) :
+    _functionName(functionName), _f(f)
+    {
+    }
+    
+};
+
+struct Table
+{
     vector<TableRow> rows;
-    string description() {
-        string result("[");
-        auto begin = rows.begin();
-        auto end = rows.end();
-        for (auto it = begin; it!=end; it++) {
-            Bool isLast = (it+1) == end;
-            string a = it->description();
-            string b = a + (isLast ? "" : "\n");
-            result += b;
-        }
-        return result+"]";
-    }
-    string rawDescription() {
-        string result("");
-        auto begin = rows.begin();
-        auto end = rows.end();
-        for (auto it = begin; it!=end; it++) {
-            Bool isLast = (it+1) == end;
-            string a = it->rawDescription();
-            string b = a + (isLast ? "" : "\n");
-            result += b;
-        }
-        return result;
-    }
     Bool isEmpty() {
         return rows.empty();
     }
@@ -311,9 +319,17 @@ public:
     }
 };
 
-class LinearFunctionsTable {
+struct PartialFunctionTableResult
+{
+    BoolVector input;
+    vector<Bool> results;
+};
+
+class LinearFunctionsTable
+{
     Table _table;
 public:
+    
     virtual Table table() {
         if(_table.isEmpty()) {
             _table.addRow(TableRow("0", [](BoolVector a){ return 0; }));
@@ -337,33 +353,53 @@ public:
         }
         return _table;
     }
-    string description() {
-        return table().description();
-    }
-    string rawDescription() {
-        return table().rawDescription();
-    }
     
-    ImmutableMatrix<Bool> toImmutableMatrix() {
+    ImmutableMatrix<Bool> toImmutableMatrixWithComputer(FunctionValuesComputer &computer) {
         Table t = table();
 
         Int rowCount = t.rows.size();
         Int columCount = Pow2SpaceDimension;
         
-        return ImmutableMatrix<Bool>(rowCount, columCount, [&t](Int row, Int col){
-            return t.rows[row].values()[col];
+        return ImmutableMatrix<Bool>(rowCount, columCount, [&t, &computer](Int row, Int col){
+            return t.rows[row].computeValuesWithComputer(computer)[col];
         });
+    }
+    
+    vector<vector<Bool>> valuesPerRowOnSpaceWithComputer(vector<BoolVector> space,
+                                                         FunctionValuesComputer &computer)
+    {
+        Table t = table();
+        vector<vector<Bool>> valuesPerRow;
+        
+        for (auto it = t.rows.begin(); it != t.rows.end(); it++) {
+            TableRow r = *it;
+            auto output = r.computeValuesWithComputer(computer);
+            valuesPerRow.push_back(output);
+        }
+
+        return valuesPerRow;
     }
 };
 
 
 class BooleanCoub
 {
-    vector<BoolVector> allSets;
+    vector<BoolVector> _allSets;
     
 public:
+    
+    virtual vector<BoolVector> allSets() {
+        if (_allSets.empty()) {
+            for (Int i=0; i<Pow2SpaceDimension; i++) {
+                auto t = alphaFromIndex(i);
+                _allSets.push_back(t);
+            }
+        }
+        return _allSets;
+    }
+    
     vector<BoolVector> layer(Int lvl) {
-        return filter<BoolVector>(allSets, [lvl](BoolVector v) {
+        return filter<BoolVector>(allSets(), [lvl](BoolVector v) {
             Int sum = 0;
             for (Int i=0; i<v.size(); i++) {
                 sum += v[i] == 0 ? 0 : 1;
@@ -392,31 +428,7 @@ public:
         string result;
         
         for (Int idx=0; idx<maxIndex; idx++) {
-            string t = NumberToString(idx);
-            if (t.length() < expectedWidth) {
-                Int d = expectedWidth - t.size();
-                switch (d) {
-                    case 4:
-                        t += "     ";
-                        break;
-                    case 3:
-                        t += "    ";
-                        break;
-                    case 2:
-                        t += "   ";
-                        break;
-                    case 1:
-                        t += "  ";
-                        break;
-                    case 0  :
-                        t += " ";
-                        break;
-                        
-                    default:
-                        break;
-                }
-            }
-            result += t;
+            result += stringFromIndex(idx);
         }
         
         return result;
@@ -527,7 +539,8 @@ public:
 
 void runTests();
 
-void writeStringToFile(string s, string fileName) {
+void writeStringToFile(string s, string fileName)
+{
     ofstream file;
     file.open(fileName, ios::out);
     file << s;
@@ -537,12 +550,49 @@ void writeStringToFile(string s, string fileName) {
 int main(int argc, const char * argv[])
 {
 //    runTests();
+    FullTableFunctionValuesComputer fullFomputer;
     LinearFunctionsTable linearFunctionsTable;
-    ImmutableMatrix<Bool> m = linearFunctionsTable.toImmutableMatrix();
+    
+    ImmutableMatrix<Bool> m = linearFunctionsTable.toImmutableMatrixWithComputer(fullFomputer);
     LinearFunctionsTableMatrix linearFunctionsTableMatrix(m);
     string description = linearFunctionsTableMatrix.rawDescription();
-    cout << description;
+    
+    BooleanCoub coub;
+    PartTableFunctionValuesComputer partComputer;
+    
+    // print by layer
+    for (Int i=1; i<=7; i++) {
+        vector<BoolVector> layer = coub.layer(i);
+        partComputer.setSpace(layer);
+        
+        description += "layer: " + NumberToString(i) + "\n";
+        description += "space: \n";
+        for (Int i=0; i<layer.size(); i++) {
+            BoolVector a = layer[i];
+            Int idx = indexFromAlpha(a);
+            string t = stringFromIndex(idx);
+            
+            description += t + " ";
+        }
+        
+        description += "\n";
+
+        vector<vector<Bool>> valuesPerRow = linearFunctionsTable.valuesPerRowOnSpaceWithComputer(layer, partComputer);
+
+        for (Int i=0; i<valuesPerRow.size(); i++) {
+            vector<Bool> row = valuesPerRow[i];
+            for (Int j=0; j<row.size(); j++) {
+                description += NumberToString(row[j]) + "     ";
+            }
+            description += "\n";
+        }
+        
+        description += "\n\n";
+    }
+
     writeStringToFile(description, "test.txt");
+    cout << description;
+
     int a;
     cin >> a;
     return 0;
@@ -554,15 +604,17 @@ int main(int argc, const char * argv[])
 
 // TODO: added a test that verifies that matrix representations is equal to table calculation (!)
 
-void runTests() {
+void runTests()
+{
     testAlphaFromIndex();
-    TableRow r("x1+x2", [](BoolVector a){ return a[0]+a[1]; });
-    cout << r.description();
+//    TableRow r("x1+x2", [](BoolVector a){ return a[0]+a[1]; });
+//    cout << r.description();
 }
 
 void testAlphaFromIndexWithInputIndexAndExpectedOutput(Int inputIndex, Bool expectedOutput[SpaceDimension]);
 
-void testAlphaFromIndex() {
+void testAlphaFromIndex()
+{
     Bool v0[SpaceDimension] = {0,0,0,0,0,0,0,0};
     Bool v1[SpaceDimension] = {1,0,0,0,0,0,0,0};
     Bool vff[SpaceDimension] = {1,1,1,1,1,1,1,1};
@@ -573,7 +625,8 @@ void testAlphaFromIndex() {
     testAlphaFromIndexWithInputIndexAndExpectedOutput(0xfa, vfa);
 }
 
-void testAlphaFromIndexWithInputIndexAndExpectedOutput(Int inputIndex, Bool expectedOutput[SpaceDimension]) {
+void testAlphaFromIndexWithInputIndexAndExpectedOutput(Int inputIndex, Bool expectedOutput[SpaceDimension])
+{
     BoolVector output(expectedOutput);
     BoolVector result = alphaFromIndex(inputIndex);
     Bool pass = output.isEqualToVector(result);
