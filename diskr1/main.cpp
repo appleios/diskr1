@@ -27,9 +27,42 @@ using namespace std;
 
 
 const Int SpaceDimension = 8;
+const Int SpaceDimension1 = 9;
 const Int Pow2SpaceDimension = 256;
 
 void testAlphaFromIndex();
+
+template<class U>
+vector<U> map(vector<U> v, std::function<U (U)> transform)
+{
+    vector<U> result;
+    for (auto it = v.begin(); it != v.end(); it++) {
+        result.push_back(transform(*it));
+    }
+    return result;
+}
+
+template<class U>
+vector<U> filter(vector<U> v, std::function<Bool (U)> includes)
+{
+    vector<U> result;
+    for (auto it = v.begin(); it != v.end(); it++) {
+        if (includes(*it)) {
+            result.push_back(*it);
+        }
+    }
+    return result;
+}
+
+template<class U>
+U reduce(vector<U> v, U initial_result, std::function<U (U, U)> next_result)
+{
+    U result = initial_result;
+    for (auto it = v.begin(); it != v.end(); it++) {
+        result = next_result(result, *it);
+    }
+    return result;
+}
 
 
 class BoolVector : public vector<Bool> {
@@ -294,6 +327,8 @@ public:
     }
 };
 
+
+
 class LinearFunctionsTableMatrix
 {
     ImmutableMatrix<Bool> _matrix;
@@ -307,8 +342,93 @@ public:
     {
         
     }
+    
     string rawDescription() {
-        return matrix().rawDescription([](Bool a){return a == 0 ? string("0") : string("1"); });
+        string result = matrix().rawDescription([](Bool a){return a == 0 ? string("0") : string("1"); });
+
+        vector<Int> numberOfOnes = countInColumn([](Bool b){ return b!=0 ? 1 : 0; });
+        vector<Int> numberOfZeros = countInColumn([](Bool b){ return b==0 ? 1 : 0; });
+        
+        result += "\n";
+        
+        Int columCount = matrix().columnCount();
+        for (Int j=0; j<columCount; j++) {
+            result += std::to_string(numberOfOnes[j]) + " ";
+        }
+        result += "\n";
+        
+        for (Int j=0; j<columCount; j++) {
+            result += std::to_string(numberOfZeros[j]) + " ";
+        }
+        result += "\n";
+
+
+        vector<Int> stats1 = eachValueCountInSequence(numberOfOnes);
+        vector<Int> stats0 = eachValueCountInSequence(numberOfZeros);
+        
+        result += descrptionForEachValueCountInSequence(stats1);
+        result += descrptionForEachValueCountInSequence(stats0);
+        
+        return result;
+    }
+    
+    string descrptionForEachValueCountInSequence(vector<Int> eachValueCountInSequence) {
+        string result;
+        
+        Int idx = 0;
+        
+        for (auto it = eachValueCountInSequence.begin(); it != eachValueCountInSequence.end(); it++) {
+            if (*it != -1) {
+                result += std::to_string(idx) + " => " + std::to_string(*it) + ", ";                
+            }
+            idx++;
+        }
+        
+        Int sum = reduce<Int>(eachValueCountInSequence, 0 , [](Int prev, Int next) { return prev+next; });
+        result += "sum: " + std::to_string(sum) + "\n";
+
+        return result;
+    }
+    
+    vector<Int> countInColumn(std::function<Int (Bool)> extractValue) {
+        vector<Int> r;
+        
+        Int rowCount = matrix().rowCount();
+        Int columCount = matrix().columnCount();
+        
+        for (Int j=0; j<columCount; j++) {
+            Int s = 0;
+            for (Int i=0; i<rowCount; i++) {
+                Bool b = matrix().at(i,j);
+                s += extractValue(b);
+            }
+            
+            r.push_back(s);
+        }
+        
+        return r;
+    }
+    
+    vector<Int> eachValueCountInSequence(vector<Int> seq) {
+        vector<Int> r;
+        
+        for (Int i=0; i<256; i++) {
+            r.push_back(-1);
+        }
+        
+        Int columCount = matrix().columnCount();
+        
+        for (Int j=0; j<columCount; j++) {
+            r[seq[j]]+=1;
+        }
+        
+        for (Int i=0; i<256; i++) {
+            if (r[i] > -1) {
+                r[i]++;
+            }
+        }
+        
+        return r;
     }
 };
 
