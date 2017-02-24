@@ -294,6 +294,24 @@ public:
     }
 };
 
+class LinearFunctionsTableMatrix
+{
+    ImmutableMatrix<Bool> _matrix;
+    
+public:
+    
+    virtual ImmutableMatrix<Bool> matrix() { return _matrix; }
+    
+    LinearFunctionsTableMatrix(ImmutableMatrix<Bool> &matrix)
+    : _matrix(matrix)
+    {
+        
+    }
+    string rawDescription() {
+        return matrix().rawDescription([](Bool a){return a == 0 ? string("0") : string("1"); });
+    }
+};
+
 void runTests();
 
 void writeStringToFile(string s, string fileName) {
@@ -308,7 +326,8 @@ int main(int argc, const char * argv[])
 //    runTests();
     LinearFunctionsTable linearFunctionsTable;
     ImmutableMatrix<Bool> m = linearFunctionsTable.toImmutableMatrix();
-    string description = m.rawDescription([](Bool a){return a == 0 ? string("0") : string("1"); });
+    LinearFunctionsTableMatrix linearFunctionsTableMatrix(m);
+    string description = linearFunctionsTableMatrix.rawDescription();
     cout << description;
     writeStringToFile(description, "test.txt");
     int a;
@@ -319,6 +338,8 @@ int main(int argc, const char * argv[])
 #pragma mark - Tests -
 
 #pragma mark - Alpha from Index
+
+// TODO: added a test that verifies that matrix representations is equal to table calculation (!)
 
 void runTests() {
     testAlphaFromIndex();
