@@ -196,6 +196,59 @@ struct Table {
     }
 };
 
+struct AssertError
+{
+};
+
+void assert(bool expression) {
+    if (!expression) {
+        throw AssertError();
+    }
+}
+
+template<class U> class ImmutableMatrix
+{
+    Int _rowCount;
+    Int _columnCount;
+    U **_data;
+public:
+    
+    Int rowCount() { return _rowCount; }
+    Int columnCount() { return _columnCount; }
+    
+    U at(Int row, Int column) {
+        assert(row >=0 && row < _rowCount && column >=0 && column < _columnCount);
+        return _data[row][column];
+    }
+    
+    ImmutableMatrix(Int rowCount, Int columnCount, std::function<U (Int, Int)> generator)
+    : _rowCount(rowCount), _columnCount(columnCount)
+    {
+        assert(rowCount >= 0);
+        assert(columnCount >=0);
+        
+        _data = new U*[rowCount];
+        for (Int i=0; i<rowCount; i++) {
+            _data[i] = new U[columnCount];
+            for (Int j=0; j<columnCount; j++) {
+                _data[i][j] = generator(i, j);
+            }
+        }
+    }
+    
+    string rawDescription(std::function<string (U)> toString) {
+        string result("");
+        Int i,j, n = rowCount(), m = columnCount();
+        for (i=0; i<n; i++) {
+            for (j=0; j<m; j++) {
+                result += toString(at(i,j)) + " ";
+            }
+            result += "\n";
+        }
+        return result;
+    }
+};
+
 class LinearFunctionsTable {
     Table _table;
 public:
@@ -210,15 +263,15 @@ public:
             _table.addRow(TableRow("x1+x2+x3+x4+x5+x6", [](BoolVector a){ return sumLinear(a,6); }));
             _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7", [](BoolVector a){ return sumLinear(a,7); }));
             _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8", [](BoolVector a){ return sumLinear(a,8); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8+1", [](BoolVector a){ return neg(sumLinear(a,8)); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+1", [](BoolVector a){ return neg(sumLinear(a,7)); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+1", [](BoolVector a){ return neg(sumLinear(a,6)); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5+1", [](BoolVector a){ return neg(sumLinear(a,5)); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+1", [](BoolVector a){ return neg(sumLinear(a,4)); }));
-            _table.addRow(TableRow("x1+x2+x3+1", [](BoolVector a){ return neg(sumLinear(a,3)); }));
-            _table.addRow(TableRow("x1+x2+1", [](BoolVector a){ return neg(a[0]+a[1]); }));
-            _table.addRow(TableRow("x1+1", [](BoolVector a){ return neg(a[0]); }));
-            _table.addRow(TableRow("1", [](BoolVector a){ return 1; }));
+//            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8+1", [](BoolVector a){ return neg(sumLinear(a,8)); }));
+//            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+1", [](BoolVector a){ return neg(sumLinear(a,7)); }));
+//            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+1", [](BoolVector a){ return neg(sumLinear(a,6)); }));
+//            _table.addRow(TableRow("x1+x2+x3+x4+x5+1", [](BoolVector a){ return neg(sumLinear(a,5)); }));
+//            _table.addRow(TableRow("x1+x2+x3+x4+1", [](BoolVector a){ return neg(sumLinear(a,4)); }));
+//            _table.addRow(TableRow("x1+x2+x3+1", [](BoolVector a){ return neg(sumLinear(a,3)); }));
+//            _table.addRow(TableRow("x1+x2+1", [](BoolVector a){ return neg(a[0]+a[1]); }));
+//            _table.addRow(TableRow("x1+1", [](BoolVector a){ return neg(a[0]); }));
+//            _table.addRow(TableRow("1", [](BoolVector a){ return 1; }));
         }
         return _table;
     }
@@ -227,6 +280,17 @@ public:
     }
     string rawDescription() {
         return table().rawDescription();
+    }
+    
+    ImmutableMatrix<Bool> toImmutableMatrix() {
+        Table t = table();
+
+        Int rowCount = t.rows.size();
+        Int columCount = Pow2SpaceDimension;
+        
+        return ImmutableMatrix<Bool>(rowCount, columCount, [&t](Int row, Int col){
+            return t.rows[row].values()[col];
+        });
     }
 };
 
@@ -243,7 +307,8 @@ int main(int argc, const char * argv[])
 {
 //    runTests();
     LinearFunctionsTable linearFunctionsTable;
-    string description = linearFunctionsTable.rawDescription();
+    ImmutableMatrix<Bool> m = linearFunctionsTable.toImmutableMatrix();
+    string description = m.rawDescription([](Bool a){return a == 0 ? string("0") : string("1"); });
     cout << description;
     writeStringToFile(description, "test.txt");
     int a;
