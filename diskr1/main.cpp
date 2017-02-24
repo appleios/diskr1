@@ -593,8 +593,8 @@ int main(int argc, const char * argv[])
     writeStringToFile(description, "test.txt");
     cout << description;
 
-    int a;
-    cin >> a;
+//    int a;
+//    cin >> a;
     return 0;
 }
 
