@@ -27,7 +27,6 @@ using namespace std;
 
 
 const Int SpaceDimension = 8;
-const Int SpaceDimension1 = 9;
 const Int Pow2SpaceDimension = 256;
 
 void testAlphaFromIndex();
