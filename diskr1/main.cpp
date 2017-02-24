@@ -23,6 +23,7 @@ using namespace std;
 
 #include <string>
 #include <iostream>
+#include <fstream>
 
 
 const Int SpaceDimension = 8;
@@ -209,15 +210,15 @@ public:
             _table.addRow(TableRow("x1+x2+x3+x4+x5+x6", [](BoolVector a){ return sumLinear(a,6); }));
             _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7", [](BoolVector a){ return sumLinear(a,7); }));
             _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8", [](BoolVector a){ return sumLinear(a,8); }));
-            _table.addRow(TableRow("1", [](BoolVector a){ return 1; }));
-            _table.addRow(TableRow("x1+1", [](BoolVector a){ return a[0]; }));
-            _table.addRow(TableRow("x1+x2+1", [](BoolVector a){ return neg(a[0]+a[1]); }));
-            _table.addRow(TableRow("x1+x2+x3+1", [](BoolVector a){ return neg(sumLinear(a,3)); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+1", [](BoolVector a){ return neg(sumLinear(a,4)); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5+1", [](BoolVector a){ return neg(sumLinear(a,5)); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+1", [](BoolVector a){ return neg(sumLinear(a,6)); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+1", [](BoolVector a){ return neg(sumLinear(a,7)); }));
             _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8+1", [](BoolVector a){ return neg(sumLinear(a,8)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+1", [](BoolVector a){ return neg(sumLinear(a,7)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+1", [](BoolVector a){ return neg(sumLinear(a,6)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+1", [](BoolVector a){ return neg(sumLinear(a,5)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+1", [](BoolVector a){ return neg(sumLinear(a,4)); }));
+            _table.addRow(TableRow("x1+x2+x3+1", [](BoolVector a){ return neg(sumLinear(a,3)); }));
+            _table.addRow(TableRow("x1+x2+1", [](BoolVector a){ return neg(a[0]+a[1]); }));
+            _table.addRow(TableRow("x1+1", [](BoolVector a){ return neg(a[0]); }));
+            _table.addRow(TableRow("1", [](BoolVector a){ return 1; }));
         }
         return _table;
     }
@@ -231,11 +232,20 @@ public:
 
 void runTests();
 
+void writeStringToFile(string s, string fileName) {
+    ofstream file;
+    file.open(fileName, ios::out);
+    file << s;
+    file.close();
+}
+
 int main(int argc, const char * argv[])
 {
 //    runTests();
     LinearFunctionsTable linearFunctionsTable;
-    cout << linearFunctionsTable.rawDescription();
+    string description = linearFunctionsTable.rawDescription();
+    cout << description;
+    writeStringToFile(description, "test.txt");
     int a;
     cin >> a;
     return 0;
