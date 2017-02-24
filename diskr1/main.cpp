@@ -158,36 +158,41 @@ Bool x123(BoolVector a) {
 }
 
 
-BoolVector calculateFunction(std::function<Bool (BoolVector)> f) {
-    BoolVector result;
-    for (Int i=0; i<Pow2SpaceDimension; i++) {
-        auto a = alphaFromIndex(i);
-        Bool b = f(a);
-        result.push_back(b);
-    }
-    return result;
+class FunctionValuesComputer
+{
+public:
+    virtual BoolVector calculateFunction(std::function<Bool (BoolVector)> f) = 0;
+};
+
+class FullTableFunctionValuesComputer : FunctionValuesComputer
+{
+
 }
 
 class TableRow {
     string _functionName;
     std::function<Bool (BoolVector)> _f;
+    FunctionValuesComputer *_computer;
+    
     BoolVector _values;
     
 public:
     
     virtual string functionName() {return _functionName;}
+    
     virtual BoolVector values() {
         if(_values.empty()) {
-            _values = calculateFunction(_f);
+            _values = computer()->calculateFunction(_f);
         }
         return _values;
     }
     
-    TableRow(string functionName, std::function<Bool (BoolVector)> f) :
-    _functionName(functionName), _f(f)
+    virtual FunctionValuesComputer *computer() {return _computer;}
+    
+    TableRow(string functionName, std::function<Bool (BoolVector)> f, FunctionValuesComputer *computer) :
+    _functionName(functionName), _f(f), _computer(computer)
     {
     }
-    
     
     string description() {
         string result("");
