@@ -365,7 +365,8 @@ public:
 
         vector<Int> stats1 = eachValueCountInSequence(numberOfOnes);
         vector<Int> stats0 = eachValueCountInSequence(numberOfZeros);
-        
+        result += "\n";
+
         result += descrptionForEachValueCountInSequence(stats1);
         result += descrptionForEachValueCountInSequence(stats0);
         
