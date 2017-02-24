@@ -25,6 +25,25 @@ using namespace std;
 #include <iostream>
 #include <fstream>
 
+#include <iomanip>
+#include <locale>
+#include <sstream>
+
+template <typename T>
+std::string NumberToString(T number)
+{
+    std::ostringstream converter;
+    converter << number;
+    return converter.str();
+}
+
+template <typename T>
+std::string NumberToStringFixed(T number, int width)
+{
+    std::ostringstream converter;
+    converter << fixed << setw(width) << setprecision(width) << number;
+    return converter.str();
+}
 
 const Int SpaceDimension = 8;
 const Int Pow2SpaceDimension = 256;
@@ -112,6 +131,10 @@ BoolVector alphaFromIndex(Int index) {
         index >>= 1;
     }
     return result;
+}
+
+Int indexFromAlpha(BoolVector alpha) {
+    return 0;
 }
 
 Bool sumLinear(BoolVector alpha, Int components) {
@@ -238,6 +261,8 @@ void assert(bool expression) {
     }
 }
 
+const string InterItemSpace = "    ";
+
 template<class U> class ImmutableMatrix
 {
     Int _rowCount;
@@ -273,7 +298,7 @@ public:
         Int i,j, n = rowCount(), m = columnCount();
         for (i=0; i<n; i++) {
             for (j=0; j<m; j++) {
-                result += toString(at(i,j)) + " ";
+                result += toString(at(i,j)) + InterItemSpace;
             }
             result += "\n";
         }
@@ -327,6 +352,21 @@ public:
 };
 
 
+class BooleanCoub
+{
+    vector<BoolVector> allSets;
+    
+public:
+    vector<BoolVector> layer(Int lvl) {
+        return filter<BoolVector>(allSets, [lvl](BoolVector v) {
+            Int sum = 0;
+            for (Int i=0; i<v.size(); i++) {
+                sum += v[i] == 0 ? 0 : 1;
+            }
+            return (sum == lvl) ? 1 : 0;
+        });
+    }
+};
 
 class LinearFunctionsTableMatrix
 {
@@ -342,9 +382,52 @@ public:
         
     }
     
-    string rawDescription() {
-        string result = matrix().rawDescription([](Bool a){return a == 0 ? string("0") : string("1"); });
+    string indexesFromZeroTo(Int maxIndex, Int expectedWidth = 4)
+    {
+        string result;
+        
+        for (Int idx=0; idx<maxIndex; idx++) {
+            string t = NumberToString(idx);
+            if (t.length() < expectedWidth) {
+                Int d = expectedWidth - t.size();
+                switch (d) {
+                    case 4:
+                        t += "     ";
+                        break;
+                    case 3:
+                        t += "    ";
+                        break;
+                    case 2:
+                        t += "   ";
+                        break;
+                    case 1:
+                        t += "  ";
+                        break;
+                    case 0  :
+                        t += " ";
+                        break;
+                        
+                    default:
+                        break;
+                }
+            }
+            result += t;
+        }
+        
+        return result;
+    }
+    
+    string rawDescription()
+    {
+        string result;
+        
+        result += indexesFromZeroTo(Pow2SpaceDimension);
+        
+        result += "\n";
+        
+        result += matrix().rawDescription([](Bool a){return a == 0 ? string("0") : string("1"); });
 
+        
         vector<Int> numberOfOnes = countInColumn([](Bool b){ return b!=0 ? 1 : 0; });
         vector<Int> numberOfZeros = countInColumn([](Bool b){ return b==0 ? 1 : 0; });
         
@@ -352,12 +435,12 @@ public:
         
         Int columCount = matrix().columnCount();
         for (Int j=0; j<columCount; j++) {
-            result += std::to_string(numberOfOnes[j]) + " ";
+            result += NumberToString(numberOfOnes[j]) + InterItemSpace;
         }
         result += "\n";
         
         for (Int j=0; j<columCount; j++) {
-            result += std::to_string(numberOfZeros[j]) + " ";
+            result += NumberToString(numberOfZeros[j]) + InterItemSpace;
         }
         result += "\n";
 
@@ -379,7 +462,7 @@ public:
         
         for (auto it = eachValueCountInSequence.begin(); it != eachValueCountInSequence.end(); it++) {
             if (*it != -1) {
-                result += std::to_string(idx) + " => " + std::to_string(*it) + ", ";
+                result += NumberToString(idx) + " => " + NumberToString(*it) + ", ";
             }
             idx++;
         }
@@ -390,7 +473,7 @@ public:
             else
                 return prev;
         });
-        result += "sum: " + std::to_string(sum) + "\n";
+        result += "sum: " + NumberToString(sum) + "\n";
 
         return result;
     }
