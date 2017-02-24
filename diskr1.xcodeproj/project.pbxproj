@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		C4478F161E6025030083948D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C4478F151E6025030083948D /* main.cpp */; };
 		C4478F201E6030AB0083948D /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C4478F1E1E6030AB0083948D /* Vector.cpp */; };
+		C4478F231E603A960083948D /* BooleanFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C4478F211E603A960083948D /* BooleanFunction.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,6 +31,8 @@
 		C4478F1D1E60308C0083948D /* Printable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Printable.h; sourceTree = "<group>"; };
 		C4478F1E1E6030AB0083948D /* Vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vector.cpp; sourceTree = "<group>"; };
 		C4478F1F1E6030AB0083948D /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vector.h; sourceTree = "<group>"; };
+		C4478F211E603A960083948D /* BooleanFunction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BooleanFunction.cpp; sourceTree = "<group>"; };
+		C4478F221E603A960083948D /* BooleanFunction.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BooleanFunction.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +69,8 @@
 				C4478F1D1E60308C0083948D /* Printable.h */,
 				C4478F1F1E6030AB0083948D /* Vector.h */,
 				C4478F1E1E6030AB0083948D /* Vector.cpp */,
+				C4478F221E603A960083948D /* BooleanFunction.hpp */,
+				C4478F211E603A960083948D /* BooleanFunction.cpp */,
 				C4478F151E6025030083948D /* main.cpp */,
 			);
 			path = diskr1;
@@ -128,6 +133,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C4478F231E603A960083948D /* BooleanFunction.cpp in Sources */,
 				C4478F201E6030AB0083948D /* Vector.cpp in Sources */,
 				C4478F161E6025030083948D /* main.cpp in Sources */,
 			);

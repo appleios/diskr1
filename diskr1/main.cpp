@@ -27,15 +27,29 @@ using namespace std;
 const Int SpaceDimension = 8;
 const Int Pow2SpaceDimension = 256;
 
-
-class BooleanVector : public Vector<Bool>, public Printable
-{
+class BoolVector : public vector<Bool> {
 public:
-    BooleanVector() {
+    Bool isEqualToVector(BoolVector &v) {
+        if (this->size() != v.size()) {
+            return 0;
+        }
+        size_type size = this->size();
+        for (size_type i=0; i<size; i++) {
+            Bool a = this->at(i);
+            Bool b = v.at(i);
+            if ((a==0 && b!=0) || (b==0 && a!=0)) {
+                return 0;
+            }
+        }
+        return 1;
     }
-    BooleanVector(Vector<Bool> &other) {
-        for (auto it = other.begin(); it!=other.end(); it++) {
-            this->push_back(*it);
+    BoolVector() {
+    }
+    BoolVector(Bool v[SpaceDimension]) {
+        this->clear();
+        
+        for (size_type i=0; i<SpaceDimension; i++) {
+            this->push_back(v[i]);
         }
     }
     string description() {
@@ -51,53 +65,46 @@ public:
 };
 
 
-typedef BooleanVector RawValues;
+// maps index value into a binary form
+// example:
+// input: index = 13
+// output: [1,0,1,1,0,0,0,0] which stans for 00001101b
+BoolVector alphaFromIndex(Int index) {
+    BoolVector result;
+    for (Int i=0; i<SpaceDimension; i++) {
+        result.push_back(index%2);
+        index >>= 1;
+    }
+    return result;
+}
 
+void testAlphaFromIndexWithInputIndexAndExpectedOutput(Int inputIndex, Bool expectedOutput[SpaceDimension]) {
+    BoolVector output(expectedOutput);
+    BoolVector result = alphaFromIndex(inputIndex);
+    Bool pass = output.isEqualToVector(result);
+    std::cout << "testAlpga with inputIndex: " << inputIndex << " ";
+    if (pass) {
+        std::cout << "PASSED";
+    } else {
+        std::cout << "FAILED (got: " << result.description() << ")";
+    }
+    std::cout << std::endl;
+}
 
-class BooleanFunction : public Printable
-{
-public:
-    RawValues value; // of size 2^SpaceDimention
-    BooleanFunction() {
-        value = prepareValues(SpaceDimension);
-    }
-    string description() {
-        return value.description();
-    }
-protected:
-    virtual RawValues prepareValues(Int dim) {
-        return RawValues();
-    }
-};
-
-class Zero : public BooleanFunction
-{
-public:
-    Zero() {
-        value = prepareValues(SpaceDimension);
-    }
-protected:
-    RawValues prepareValues(Int dim) {
-        RawValues values = RawValues();
-        for (Int i=0; i<Pow2SpaceDimension; i++) {
-            values.push_back(Int(0));
-        }
-        return values;
-    }
-};
-
-void print(Printable *i) {
-    cout << i->description() << endl;
+void testAlphaFromIndex() {
+    Bool v0[SpaceDimension] = {0,0,0,0,0,0,0,0};
+    Bool v1[SpaceDimension] = {1,0,0,0,0,0,0,0};
+    Bool vff[SpaceDimension] = {1,1,1,1,1,1,1,1};
+    Bool vfa[SpaceDimension] = {0,1,0,1,1,1,1,1};
+    testAlphaFromIndexWithInputIndexAndExpectedOutput(0, v0);
+    testAlphaFromIndexWithInputIndexAndExpectedOutput(1, v1);
+    testAlphaFromIndexWithInputIndexAndExpectedOutput(0xff, vff);
+    testAlphaFromIndexWithInputIndexAndExpectedOutput(0xfa, vfa);
 }
 
 int main(int argc, const char * argv[])
 {
-    Zero z;
-    print(&z);
-    BooleanVector zeros = z.value;
-//    Vector<Bool> ones = zeros.map([](Bool x){return 1;});
-//    BooleanVector o(ones);
-//    print(&o);
+    testAlphaFromIndex();
     int a;
     cin >> a;
     return 0;
