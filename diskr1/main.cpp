@@ -11,6 +11,7 @@
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
+#include <functional>
 using namespace std;
 
 #include <stdlib.h>
@@ -67,7 +68,6 @@ public:
     }
 };
 
-
 // maps index value into a binary form
 // example:
 // input: index = 13
@@ -81,9 +81,104 @@ BoolVector alphaFromIndex(Int index) {
     return result;
 }
 
+Bool sumLinear(BoolVector alpha, Int components) {
+    Bool result = 0;
+    for (Int i=0; i<components; i++) {
+        result += alpha[i];
+    }
+    return result % 2;
+}
+
+Bool neg(Bool a) {
+    return a == 0 ? 1 : 0;
+}
+
+Bool x1(BoolVector alpha) {
+    return alpha[0];
+}
+
+Bool x12(BoolVector a) {
+    return sumLinear(a, 2);
+}
+
+Bool x123(BoolVector a) {
+    return sumLinear(a, 3);
+}
+
+Bool x1234(BoolVector a) {
+    return sumLinear(a, 4);
+}
+
+
+BoolVector calculateFunction(std::function<Bool (BoolVector)> f) {
+    BoolVector result;
+    for (Int i=0; i<Pow2SpaceDimension; i++) {
+        auto a = alphaFromIndex(i);
+        Bool b = f(a);
+        result.push_back(b);
+    }
+    return result;
+}
+
+struct TableRow {
+private:
+    string _functionName;
+    std::function<Bool (BoolVector)> _f;
+    BoolVector _values;
+    
+public:
+    
+    string functionName() {return _functionName;}
+    BoolVector values() {
+        if(_values.empty()) {
+            _values = calculateFunction(_f);
+        }
+        return _values;
+    }
+    
+    TableRow(string functionName, std::function<Bool (BoolVector)> f) :
+    _functionName(functionName), _f(f)
+    {
+    }
+    
+    
+    string description() {
+        string result("");
+        result = functionName() + ": [";
+        auto begin = values().begin();
+        auto end = values().end();
+        for (auto it = begin; it!=end; it++) {
+            Bool isLast = (it+1) == end;
+            string a = (*it == 0) ? "0" : "1";
+            string b = a + (isLast ? "" : ", ");
+            result += b;
+        }
+        return result+"]";
+    }
+};
+
+struct Table {
+    vector<TableRow> rows;
+    string description() {
+        string result("[");
+        auto begin = rows.begin();
+        auto end = rows.end();
+        for (auto it = begin; it!=end; it++) {
+            Bool isLast = (it+1) == end;
+            string a = it->description();
+            string b = a + (isLast ? "" : "\n");
+            result += b;
+        }
+        return result+"]";
+    }
+};
+
+
 int main(int argc, const char * argv[])
 {
     testAlphaFromIndex();
+    TableRow r("x1+x2", [](BoolVector a){ return a[0]+a[1]; });
+    cout << r.description();
     int a;
     cin >> a;
     return 0;
