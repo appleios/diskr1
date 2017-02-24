@@ -27,6 +27,9 @@ using namespace std;
 const Int SpaceDimension = 8;
 const Int Pow2SpaceDimension = 256;
 
+void testAlphaFromIndex();
+
+
 class BoolVector : public vector<Bool> {
 public:
     Bool isEqualToVector(BoolVector &v) {
@@ -78,6 +81,18 @@ BoolVector alphaFromIndex(Int index) {
     return result;
 }
 
+int main(int argc, const char * argv[])
+{
+    testAlphaFromIndex();
+    int a;
+    cin >> a;
+    return 0;
+}
+
+#pragma mark - Tests -
+
+#pragma mark - Alpha from Index
+
 void testAlphaFromIndexWithInputIndexAndExpectedOutput(Int inputIndex, Bool expectedOutput[SpaceDimension]) {
     BoolVector output(expectedOutput);
     BoolVector result = alphaFromIndex(inputIndex);
@@ -100,12 +115,4 @@ void testAlphaFromIndex() {
     testAlphaFromIndexWithInputIndexAndExpectedOutput(1, v1);
     testAlphaFromIndexWithInputIndexAndExpectedOutput(0xff, vff);
     testAlphaFromIndexWithInputIndexAndExpectedOutput(0xfa, vfa);
-}
-
-int main(int argc, const char * argv[])
-{
-    testAlphaFromIndex();
-    int a;
-    cin >> a;
-    return 0;
 }
