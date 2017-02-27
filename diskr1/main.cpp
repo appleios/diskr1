@@ -135,7 +135,8 @@ BoolVector alphaFromIndex(Int index) {
 
 Int indexFromAlpha(BoolVector a) {
     Int result = 0;
-    for (auto it = a.begin(); it != a.end(); it++) {
+    
+    for (auto it = a.rbegin(); it != a.rend(); it++) {
         result = (result << 1) + *it;
     }
     return result;
@@ -166,22 +167,21 @@ string stringFromIndex(Int idx, Int expectedWidth = 4) {
     if (t.length() < expectedWidth) {
         Int d = expectedWidth - t.size();
         switch (d) {
-            case 4:
+            case 5:
                 t += "     ";
-                break;
-            case 3:
+            case 4:
                 t += "    ";
                 break;
-            case 2:
+            case 3:
                 t += "   ";
                 break;
-            case 1:
+            case 2:
                 t += "  ";
                 break;
-            case 0  :
+            case 1:
                 t += " ";
                 break;
-                
+            case 0 :
             default:
                 break;
         }
@@ -332,24 +332,24 @@ public:
     
     virtual Table table() {
         if(_table.isEmpty()) {
-            _table.addRow(TableRow("0", [](BoolVector a){ return 0; }));
-            _table.addRow(TableRow("x1", [](BoolVector a){ return a[0]; }));
-            _table.addRow(TableRow("x1+x2", [](BoolVector a){ return sumLinear(a,2); }));
-            _table.addRow(TableRow("x1+x2+x3", [](BoolVector a){ return sumLinear(a,3); }));
-            _table.addRow(TableRow("x1+x2+x3+x4", [](BoolVector a){ return sumLinear(a,4); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5", [](BoolVector a){ return sumLinear(a,5); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6", [](BoolVector a){ return sumLinear(a,6); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7", [](BoolVector a){ return sumLinear(a,7); }));
-            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8", [](BoolVector a){ return sumLinear(a,8); }));
-//            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8+1", [](BoolVector a){ return neg(sumLinear(a,8)); }));
-//            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+1", [](BoolVector a){ return neg(sumLinear(a,7)); }));
-//            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+1", [](BoolVector a){ return neg(sumLinear(a,6)); }));
-//            _table.addRow(TableRow("x1+x2+x3+x4+x5+1", [](BoolVector a){ return neg(sumLinear(a,5)); }));
-//            _table.addRow(TableRow("x1+x2+x3+x4+1", [](BoolVector a){ return neg(sumLinear(a,4)); }));
-//            _table.addRow(TableRow("x1+x2+x3+1", [](BoolVector a){ return neg(sumLinear(a,3)); }));
-//            _table.addRow(TableRow("x1+x2+1", [](BoolVector a){ return neg(sumLinear(a,2)); }));
-//            _table.addRow(TableRow("x1+1", [](BoolVector a){ return neg(a[0]); }));
-//            _table.addRow(TableRow("1", [](BoolVector a){ return 1; }));
+//            _table.addRow(TableRow("0", [](BoolVector a){ return 0; }));
+//            _table.addRow(TableRow("x1", [](BoolVector a){ return a[0]; }));
+//            _table.addRow(TableRow("x1+x2", [](BoolVector a){ return sumLinear(a,2); }));
+//            _table.addRow(TableRow("x1+x2+x3", [](BoolVector a){ return sumLinear(a,3); }));
+//            _table.addRow(TableRow("x1+x2+x3+x4", [](BoolVector a){ return sumLinear(a,4); }));
+//            _table.addRow(TableRow("x1+x2+x3+x4+x5", [](BoolVector a){ return sumLinear(a,5); }));
+//            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6", [](BoolVector a){ return sumLinear(a,6); }));
+//            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7", [](BoolVector a){ return sumLinear(a,7); }));
+//            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8", [](BoolVector a){ return sumLinear(a,8); }));
+            _table.addRow(TableRow("1", [](BoolVector a){ return 1; }));
+            _table.addRow(TableRow("x1+1", [](BoolVector a){ return neg(a[0]); }));
+            _table.addRow(TableRow("x1+x2+1", [](BoolVector a){ return neg(sumLinear(a,2)); }));
+            _table.addRow(TableRow("x1+x2+x3+1", [](BoolVector a){ return neg(sumLinear(a,3)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+1", [](BoolVector a){ return neg(sumLinear(a,4)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+1", [](BoolVector a){ return neg(sumLinear(a,5)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+1", [](BoolVector a){ return neg(sumLinear(a,6)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+1", [](BoolVector a){ return neg(sumLinear(a,7)); }));
+            _table.addRow(TableRow("x1+x2+x3+x4+x5+x6+x7+x8+1", [](BoolVector a){ return neg(sumLinear(a,8)); }));
         }
         return _table;
     }
@@ -364,6 +364,7 @@ public:
             return t.rows[row].computeValuesWithComputer(computer)[col];
         });
     }
+    
     
     vector<vector<Bool>> valuesPerRowOnSpaceWithComputer(vector<BoolVector> space,
                                                          FunctionValuesComputer &computer)
@@ -537,6 +538,149 @@ public:
     }
 };
 
+struct Column
+{
+    BoolVector alpha;
+    vector<Bool> columnOfFunctionValues;
+    Int countOf[2]; // count of [zeros, ones]
+};
+
+struct AnalyzeLayerResult
+{
+    ImmutableMatrix<Bool> valuesMatrix;
+    vector<Column> sortedColumns;
+    AnalyzeLayerResult(ImmutableMatrix<Bool> matrix, vector<Column> columns)
+    : valuesMatrix(matrix), sortedColumns(columns)
+    {}
+};
+
+AnalyzeLayerResult analyzeLayer(vector<BoolVector> layer, vector<vector<Bool>> valuesPerRow, string &description)
+{
+    for (Int i=0; i<valuesPerRow.size(); i++) {
+        vector<Bool> row = valuesPerRow[i];
+        description += stringFromIndex(i, 2) + " ";
+        for (Int j=0; j<row.size(); j++) {
+            description += NumberToString(row[j]) + "     ";
+        }
+        description += "\n";
+    }
+    
+    description += "\nlayer analysis:\n";
+    
+    Int rowCount = valuesPerRow.size();
+    Int colCount = valuesPerRow[0].size();
+
+    ImmutableMatrix<Bool> valuesMatrix(rowCount, colCount, [&valuesPerRow](Int i, Int j) {
+        return valuesPerRow[i][j];
+    });
+    
+    vector<Column> columns;
+    for (Int j=0; j<valuesMatrix.columnCount(); ++j) {
+        Column col;
+        col.alpha = layer[j];
+        
+        vector<Bool> valuesInColumn;
+        Int countOf[2] = {0};
+        
+        for (Int i=0; i<valuesMatrix.rowCount(); ++i) {
+            auto v = valuesMatrix.at(i, j);
+            countOf[v]++;
+            valuesInColumn.push_back(v);
+        }
+        
+        col.columnOfFunctionValues = valuesInColumn;
+        col.countOf[0] = countOf[0];
+        col.countOf[1] = countOf[1];
+        
+        columns.push_back(col);
+    }
+    
+    sort(columns.begin(), columns.end(), [](const Column &col1, const Column &col2) {
+        if (col1.countOf[1] == col2.countOf[1]) {
+            return col1.alpha > col2.alpha;
+        }
+        return col1.countOf[1] > col2.countOf[1];
+    });
+    
+    description += "sorted by count of 1s:\n";
+    
+    // alphas
+    description += "   ";
+    for (Int i=0; i<layer.size(); i++) {
+        Column col = columns[i];
+        BoolVector a = col.alpha;
+        Int idx = indexFromAlpha(a);
+        string t = stringFromIndex(idx);
+        
+        description += t + "  ";
+    }
+    description += "\n";
+    for (Int i=0; i<rowCount; i++) {
+        description += stringFromIndex(i, 2) + " ";
+        for (Int j=0; j<colCount; j++) {
+            Column col = columns[j];
+            auto value = col.columnOfFunctionValues[i];
+            description += NumberToString(value) + "     ";
+        }
+        description += "\n";
+    }
+    
+    AnalyzeLayerResult result(valuesMatrix, columns);
+    return result;
+}
+
+struct AlphaSignature
+{
+    vector<BoolVector> signature;
+    Int countOf[2]; // count of [0s, 1s]
+};
+
+struct FunctionCovering
+{
+    Int functionIndex;
+    vector<Int> inputValue;
+    vector<AlphaSignature> signatures;
+};
+
+struct Covering
+{
+    vector<FunctionCovering> functionCoverings;
+    vector<Int> inputValues;
+    vector<AlphaSignature> inputValueSignatures;
+};
+
+// вообще, тут можно сразу вычеркивать из множества layer, те вектора, что мы уже использовали где-то
+
+// параметр maxCountOf[1] - в начале передает 1
+// если в том массиве, который нам вернули пусто, а нам все еще нужны наборы, чтобы покрыть некоторые функции
+// мы увеличиваем эту величину и запускаемся вновь
+
+// нужно передавать также, сколько для какой функции уже найдено наборов и какая у них сигнатура (на каких местах у них 0)
+
+void findOptimalSolutionForLayer(Int layerIndex, vector<BoolVector> layer,
+                                 const vector<Column> &sortedColumns,
+                                 Covering existingCovering,
+                                 Covering newCovering,
+                                 Int maxCountOf[2],
+                                 string &description)
+{
+    vector<Int> usedIndexes;
+    for (Int i=0; i<sortedColumns.size(); i++) {
+        
+        Column col = sortedColumns[i];
+        
+        BoolVector a = col.alpha;
+        Int idx = indexFromAlpha(a);
+        
+        auto it = find(existingCovering.inputValues.begin(), existingCovering.inputValues.end(), idx);
+        if (it != existingCovering.inputValues.end()) { // idx was previously used
+            continue;
+        }
+        
+        
+    }
+}
+
 void runTests();
 
 void writeStringToFile(string s, string fileName)
@@ -549,7 +693,8 @@ void writeStringToFile(string s, string fileName)
 
 int main(int argc, const char * argv[])
 {
-//    runTests();
+    runTests();
+    
     FullTableFunctionValuesComputer fullFomputer;
     LinearFunctionsTable linearFunctionsTable;
     
@@ -566,35 +711,29 @@ int main(int argc, const char * argv[])
         partComputer.setSpace(layer);
         
         description += "layer: " + NumberToString(i) + "\n";
-        description += "space: \n";
+        description += "space: \n   ";
         for (Int i=0; i<layer.size(); i++) {
             BoolVector a = layer[i];
             Int idx = indexFromAlpha(a);
             string t = stringFromIndex(idx);
             
-            description += t + " ";
+            description += t + "  ";
         }
         
         description += "\n";
 
         vector<vector<Bool>> valuesPerRow = linearFunctionsTable.valuesPerRowOnSpaceWithComputer(layer, partComputer);
-
-        for (Int i=0; i<valuesPerRow.size(); i++) {
-            vector<Bool> row = valuesPerRow[i];
-            for (Int j=0; j<row.size(); j++) {
-                description += NumberToString(row[j]) + "     ";
-            }
-            description += "\n";
-        }
+        
+        AnalyzeLayerResult analysisResult = analyzeLayer(layer, valuesPerRow, description);
         
         description += "\n\n";
     }
 
     writeStringToFile(description, "test.txt");
-    cout << description;
+//    cout << description;
 
-//    int a;
-//    cin >> a;
+    int a;
+    cin >> a;
     return 0;
 }
 
@@ -602,11 +741,25 @@ int main(int argc, const char * argv[])
 
 #pragma mark - Alpha from Index
 
-// TODO: added a test that verifies that matrix representations is equal to table calculation (!)
+void testIndexFromAlpha()
+{
+    std::cout << "testIndexFromAlpha ";
+    for (Int i=0; i<SpaceDimension; i++) {
+        BoolVector a = alphaFromIndex(i);
+        Int j = indexFromAlpha(a);
+        if (j != i) {
+            std::cout << "FAILED" << "Input: " << a.description() << ", expected: " << i << ", but got: " << j << ")";
+            std::cout << std::endl;
+            return;
+        }
+    }
+    std::cout << "PASSED" << endl;
+}
 
 void runTests()
 {
     testAlphaFromIndex();
+    testIndexFromAlpha();
 //    TableRow r("x1+x2", [](BoolVector a){ return a[0]+a[1]; });
 //    cout << r.description();
 }
